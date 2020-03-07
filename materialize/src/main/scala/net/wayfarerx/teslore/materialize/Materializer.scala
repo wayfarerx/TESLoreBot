@@ -3,21 +3,26 @@ package materialize
 
 import java.net.URL
 
+import concurrent.ExecutionContext
 import concurrent.duration._
 
 import cats.effect.{Blocker, ContextShift, Sync, Timer}
 import cats.implicits._
+
+import io.odin.Logger
 
 /**
  * A utility that materializes the markov model.
  *
  * @tparam F The type of effect to use.
  * @param blocker     The blocking execution context to use.
+ * @param logger      The logger to use.
  * @param storage     The storage system to use.
  * @param interpreter The language interpreter to use.
  */
 case class Materializer[F[_] : ContextShift : Sync : Timer](
   blocker: Blocker,
+  logger: Logger[F],
   storage: Storage[F],
   interpreter: model.Interpreter[F]
 ) {
@@ -49,9 +54,11 @@ case class Materializer[F[_] : ContextShift : Sync : Timer](
    * @return The result of attempting to materialize the list of indexed URLs.
    */
   private def materializeIndex: F[library.Index] = for {
+    _ <- logger.info("Materializing index.")
     stored <- storage.loadIndex
     index <- stored map Sync[F].pure getOrElse {
       for {
+        _ <- logger.info("Downloading index.")
         result <- download(library.ImperialLibraryUrl, delay = false) map library.Index
         _ <- storage.saveIndex(result)
       } yield result
@@ -102,6 +109,7 @@ case class Materializer[F[_] : ContextShift : Sync : Timer](
    * @return The result of attempting to materialize a story.
    */
   private def materializeStory(name: String, url: Option[String]): F[Option[model.Story]] = for {
+    _ <- logger.info(s"""Materializing story "$name".""")
     stored <- storage.loadStory(name)
     story <- stored map (Sync[F] pure Option(_)) getOrElse {
       for {
@@ -121,6 +129,7 @@ case class Materializer[F[_] : ContextShift : Sync : Timer](
    * @return The result of attempting to materialize a scrape.
    */
   private def materializeScrape(name: String, url: Option[String]): F[Option[library.Scrape]] = for {
+    _ <- logger.info(s"""Materializing scrape "$name".""")
     stored <- storage.loadScrape(name)
     scrape <- stored map (Sync[F] pure Option(_)) getOrElse {
       for {
@@ -141,9 +150,11 @@ case class Materializer[F[_] : ContextShift : Sync : Timer](
    * @return The result of attempting to materialize an HTML file.
    */
   private def materializeHtml(name: String, url: Option[String]): F[Option[String]] = for {
+    _ <- logger.info(s"""Materializing HTML "$name".""")
     stored <- storage.loadHtml(name)
     html <- stored map (Sync[F] pure Option(_)) getOrElse {
       for {
+        _ <- logger.info(s"""Downloading HTML "$name".""")
         result <- url map (download(_) map (Option(_))) getOrElse Sync[F].pure(Option.empty[String])
         _ <- result map (storage.saveHtml(name, _)) getOrElse Sync[F].unit
       } yield result
@@ -175,6 +186,14 @@ case class Materializer[F[_] : ContextShift : Sync : Timer](
 object Materializer {
 
   /** The downtime that is enforced between downloads. */
-  val Downtime: FiniteDuration = 2.minutes
+  val Downtime: FiniteDuration = 15.seconds
+
+  def apply[F[_] : ContextShift : Sync : Timer](
+    logger: Logger[F],
+    storage: Storage[F],
+    interpreter: model.Interpreter[F])(
+    implicit blockingExecutionContext: ExecutionContext
+  ): Materializer[F] =
+    Materializer(Blocker.liftExecutionContext(blockingExecutionContext), logger, storage, interpreter)
 
 }

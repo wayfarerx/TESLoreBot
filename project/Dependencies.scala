@@ -17,6 +17,9 @@ object Dependencies {
   lazy val Fs2Core = "co.fs2" %% "fs2-core" % Fs2Version
   lazy val Fs2Io = "co.fs2" %% "fs2-io" % Fs2Version
 
+  lazy val OdinVersion = "0.7.0"
+  lazy val OdinCore = "com.github.valskalla" %% "odin-core" % OdinVersion
+
   lazy val JSoupVersion = "1.12.1"
   lazy val JSoup = "org.jsoup" % "jsoup" % JSoupVersion
 

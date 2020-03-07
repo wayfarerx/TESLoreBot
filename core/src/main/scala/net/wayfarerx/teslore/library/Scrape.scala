@@ -1,5 +1,9 @@
 package net.wayfarerx.teslore.library
 
+import scala.jdk.CollectionConverters._
+
+import org.jsoup.Jsoup
+
 /**
  * The content scraped from an HTML file.
  *
@@ -13,10 +17,6 @@ case class Scrape(title: String, author: String, paragraphs: List[String])
  * Factory for HTML content scrapes.
  */
 object Scrape extends ((String, String, List[String]) => Scrape) {
-
-  import scala.jdk.CollectionConverters._
-
-  import org.jsoup.Jsoup
 
   /** The lower-case string at the front of author declarations. */
   private val AuthorPrefix = "author:"

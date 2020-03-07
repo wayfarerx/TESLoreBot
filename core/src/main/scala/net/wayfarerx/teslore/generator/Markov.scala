@@ -7,4 +7,6 @@ case class Markov()
 object Markov {
 
   def apply(stories: List[Story]): Markov = Markov() // FIXME
+
+
 }

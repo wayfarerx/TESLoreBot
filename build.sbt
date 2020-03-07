@@ -30,6 +30,7 @@ lazy val materialize = (project in file("materialize")).settings(
   ThisBuild / name := "tes-lore-bot-materialize",
   libraryDependencies ++= Seq(
     Fs2Core,
-    Fs2Io
+    Fs2Io,
+    OdinCore
   )
 ).dependsOn(core)

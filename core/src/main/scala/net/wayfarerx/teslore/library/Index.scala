@@ -1,15 +1,15 @@
 package net.wayfarerx.teslore.library
 
+import scala.jdk.CollectionConverters._
+
+import org.jsoup.Jsoup
+
 /**
  * The index of the documents the TES lore bot tracks.
  *
  * @param html The HTML content of the index page.
  */
 case class Index(html: String) {
-
-  import scala.jdk.CollectionConverters._
-
-  import org.jsoup.Jsoup
 
   /** The URLs of the documents the TES lore bot tracks. */
   lazy val urls: List[String] =

@@ -107,7 +107,7 @@ case class Interpreter[F[_]](
                 index + namesHead.length
               )
             case _ =>
-              Element.Word(tokensHead, posHead) :: continue(tokensTail, posTail, names, index + 1)
+              Element.Token(tokensHead.toLowerCase, posHead) :: continue(tokensTail, posTail, names, index + 1)
           }
         case _ => Nil
       }
@@ -170,7 +170,7 @@ object Interpreter {
    * @param defer   The implicit defer type class.
    * @return The result of attempting to create a common interpreter.
    */
-  def apply[F[_]]()(implicit bracket: Bracket[F, Throwable], defer: Defer[F]): F[Interpreter[F]] = for {
+  def apply[F[_]](implicit bracket: Bracket[F, Throwable], defer: Defer[F]): F[Interpreter[F]] = for {
     sentenceDetector <- load("en-sentences.bin", stream => new SentenceDetectorME(new SentenceModel(stream)))
     tokenizer <- load("en-tokens.bin", stream => new TokenizerME(new TokenizerModel(stream)))
     nameFinder <- load("en-names.bin", stream => new NameFinderME(new TokenNameFinderModel(stream)))

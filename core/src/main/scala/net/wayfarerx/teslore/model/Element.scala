@@ -23,6 +23,6 @@ object Element {
    * @param text The text of this element.
    * @param pos  The part of speech of this element.
    */
-  case class Word(text: String, pos: String) extends Element
+  case class Token(text: String, pos: String) extends Element
 
 }
